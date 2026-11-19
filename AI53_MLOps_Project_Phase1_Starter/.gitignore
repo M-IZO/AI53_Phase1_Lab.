@@ -22,4 +22,3 @@ mlflow.db-*
 *.log
 
 .vscode/settings.json
-.python-version
