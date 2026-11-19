@@ -24,3 +24,13 @@ Start with a table of at least six issues. For each one, list the file or settin
 `uv.lock` records the exact versions of dependencies installed in the virtual environment, ensuring that the same versions can be installed in other environments for consistency.
 
 `.venv/` is a directory that contains a virtual environment for the project. It isolates the project's dependencies from the global Python environment.
+
+*Does random_state=42 guarantee bit-for-bit identical results on every CPU/GPU/software stack? Explain briefly*
+
+No it does not guarantee bit-for-bit identical results on every CPU/GPU/software stack. 
+
+## Milestone 2 - Extract and track the images
+
+*In one sentence each, state what the Git remote stores, what the DVC remote stores, and whether git push transfers the DVC-managed raw images.*
+
+The Git remote stores the version-controlled files (code, documentation, etc.) while the DVC remote stores the version-controlled data and model files(like images, datasets, etc.). Yes, git push transfers the DVC-managed raw images.
