@@ -1,8 +1,10 @@
 # Lab Report
 
-### Marine IZOULET
+#### Marine IZOULET
 
-### AI53
+#### AI53
+
+## Milestone 0
 
 Start with a table of at least six issues. For each one, list the file or setting, explain the problem and suggest a fix.
 
@@ -14,3 +16,11 @@ Start with a table of at least six issues. For each one, list the file or settin
 | 4 | There's no data-quality check            | `src/validate_data.pycrashes or trains on bad data`         |                                                                         |                                                      |
 | 5 | No training                              | `src/train.py`                                              | The run starts but logs no params, metrics, dataset, artifacts or model | implement it                                         |
 | 6 |                                          |                                                               |                                                                         |                                                      |
+
+## Milestone 1
+
+`pyproject.toml` is a configuration file used in Python projects to specify build system requirements and project metadata. 
+
+`uv.lock` records the exact versions of dependencies installed in the virtual environment, ensuring that the same versions can be installed in other environments for consistency.
+
+`.venv/` is a directory that contains a virtual environment for the project. It isolates the project's dependencies from the global Python environment.
