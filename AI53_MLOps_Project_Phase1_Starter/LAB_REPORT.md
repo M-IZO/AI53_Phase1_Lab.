@@ -34,3 +34,60 @@ No it does not guarantee bit-for-bit identical results on every CPU/GPU/software
 *In one sentence each, state what the Git remote stores, what the DVC remote stores, and whether git push transfers the DVC-managed raw images.*
 
 The Git remote stores the version-controlled files (code, documentation, etc.) while the DVC remote stores the version-controlled data and model files(like images, datasets, etc.). Yes, git push transfers the DVC-managed raw images.
+
+
+## Milestone 3 - Implement a Core data-quality gate
+
+uv run --locked pytest -q tests/test_data_validation.py tests/test_validation_contract.py
+``` bash
+7 passed in 0.06s
+``` 
+
+uv run --locked python -m src.validate_data
+
+```json
+{
+  "classes": [
+    "angular_leaf_spot",
+    "bean_rust",
+    "healthy"
+  ],
+  "splits": {
+    "test": {
+      "class_counts": {
+        "angular_leaf_spot": 43,
+        "bean_rust": 43,
+        "healthy": 42
+      },
+      "images": 128
+    },
+    "train": {
+      "class_counts": {
+        "angular_leaf_spot": 345,
+        "bean_rust": 348,
+        "healthy": 341
+      },
+      "images": 1034
+    },
+    "validation": {
+      "class_counts": {
+        "angular_leaf_spot": 44,
+        "bean_rust": 45,
+        "healthy": 44
+      },
+      "images": 133
+    }
+  },
+  "status": "PASS",
+  "total_images": 1295
+}
+```
+## Milestone 4 - Design the DVC pipeline from scratch
+
+## Milestone 5 - Record what each MLflow Run used
+
+## Milestone 6 - Predict which stages need to run again
+
+## Milestone 7 - Compare three controlled runs
+
+## Milestone 8 - Select and test one model
