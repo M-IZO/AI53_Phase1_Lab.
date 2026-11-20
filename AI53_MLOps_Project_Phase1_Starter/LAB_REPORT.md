@@ -84,6 +84,63 @@ uv run --locked python -m src.validate_data
 ```
 ## Milestone 4 - Design the DVC pipeline from scratch
 
+*Should PREPARE depend on reports/data_quality.json?*
+
+Yes. It is the output of VALIDATE, and this dependency is what puts VALIDATE before PREPARE in the DAG. 
+
+*Should PREPARE also depend directly on data/raw?*
+
+Yes. PREPARE reads the raw images itself. If it only depended on the report, a change to the images that produced an identical report would not be detected, and PREPARE would not run again.
+
+*Which changes in params.yaml should make TRAIN run again?*
+
+Only the keys `src/train.py` and its helpers read: `data.image_size`, `train.batch_size`, `train.epochs`, `train.learning_rate`, `train.dropout`, `train.random_state`, `augmentation.enabled`, `augmentation.horizontal_flip`, `augmentation.rotation_degrees`, `compute.device`, `tracking.uri` and `tracking.experiment`. 
+
+*Why should EVALUATE track selection.run_id?*
+
+EVALUATE does not read `models/model.pt`. It loads the model logged in MLflow for `selection.run_id`. That setting is the only link between EVALUATE and the chosen model. If DVC did not track it, selecting another Run would leave the stage "up to date" and `reports/test_metrics.json` would keep the scores of the old model.
+
+*Which file contains scores that DVC should track as metrics?*
+
+`reports/train_summary.json` (final validation loss, accuracy and macro-F1) for TRAIN, and `reports/test_metrics.json` (test accuracy and macro-F1) for EVALUATE.
+
+uv run --locked dvc stage list
+
+```text
+validate  Outputs reports/data_quality.json
+prepare   Outputs data/processed/train, data/processed/validation, data/processed/test, d…
+train     Outputs models/model.pt, reports/training_curves.png, reports/run_manifest.json…
+evaluate  Outputs reports/test_confusion_matrix.png; Reports reports/test_metrics.json
+```
+
+uv run --locked dvc dag
+
+```text
+        +--------------+          
+        | data/raw.dvc |          
+        +--------------+          
+           **        **           
+         **            **         
+        *                **       
++----------+               *      
+| validate |             **       
++----------+           **         
+           **        **           
+             **    **             
+               *  *               
+           +---------+            
+           | prepare |            
+           +---------+            
+           **        **           
+         **            **         
+        *                *        
+  +-------+         +----------+  
+  | train |         | evaluate |  
+  +-------+         +----------+  
+```
+
+EVALUATE does not depend on TRAIN: it depends on the prepared test data and manifests, and gets the model from MLflow through `selection.run_id`.
+
 ## Milestone 5 - Record what each MLflow Run used
 
 ## Milestone 6 - Predict which stages need to run again
