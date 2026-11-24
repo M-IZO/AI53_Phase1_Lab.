@@ -1,12 +1,12 @@
 {
   "configuration": {
-    "augmentation_enabled": false,
+    "augmentation_enabled": true,
     "batch_size": 32,
     "dropout": 0.3,
     "epochs": 4,
     "horizontal_flip": 0.5,
     "image_size": 96,
-    "learning_rate": 0.0003,
+    "learning_rate": 0.001,
     "rotation_degrees": 10.0
   },
   "data": {
@@ -23,11 +23,11 @@
   },
   "execution": {
     "device": "cpu",
-    "mlflow_run_id": "9bf7b6dba4f74ddcab6100fe0cb282e5",
+    "mlflow_run_id": "23e5ed78c9614be5a6c30cc230ac8b18",
     "random_state": 42
   },
   "git": {
-    "commit": "cacc5040c9423985feac2def123f603759d73e7b",
+    "commit": "e9073b1b31c0ca25aa814535057467c3fb1e75e8",
     "dirty": true
   }
 }
