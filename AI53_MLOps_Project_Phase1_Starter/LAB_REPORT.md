@@ -247,11 +247,11 @@ All three Runs were checked in MLflow: same seed (42), 4 epochs, batch size 32, 
 | B | `train.learning_rate` 0.001 → 0.0003 | 0.6165 | 0.6091 | 6.1 s | `9bf7b6dba4f74ddcab6100fe0cb282e5` |
 | C | `augmentation.enabled` false → true | 0.6617 | 0.6487 | 6.2 s | `23e5ed78c9614be5a6c30cc230ac8b18` |
 
-**B vs A.** The prediction is supported: with the smaller learning rate, B learns more slowly. After 4 epochs it has a higher `val_loss` (0.8927 vs 0.8326), a higher `train_loss` (0.9198 vs 0.8670) and a lower macro-F1 (−0.023). Its loss curves were still falling at epoch 4, so B is under-trained rather than worse in general: with more epochs it could catch up.
+**B vs A.** The prediction is supported: with the smaller learning rate, B learns more slowly. After 4 epochs it has a higher val_loss (0.8927 vs 0.8326), a higher train_loss (0.9198 vs 0.8670) and a lower macro-F1 (−0.023). Its loss curves were still falling at epoch 4, so B is under-trained rather than worse in general: with more epochs it could catch up.
 
-**C vs A.** The prediction is partly supported. As expected, `train_loss` is higher (0.8770 vs 0.8670) and the training time is unchanged. But the validation scores did not drop: C is slightly better (macro-F1 +0.017, accuracy +0.015) with almost the same `val_loss` (0.8362 vs 0.8326). The accuracy gap is only 2 of the 133 validation images, so with one seed and a small validation set this difference is too small to say that augmentation is better in general.
+**C vs A.** The prediction is partly supported. As expected, train_loss is higher (0.8770 vs 0.8670) and the training time is unchanged. But the validation scores did not drop: C is slightly better (macro-F1 +0.017, accuracy +0.015) with almost the same val_loss (0.8362 vs 0.8326). The accuracy gap is only 2 of the 133 validation images, so with one seed and a small validation set this difference is too small to say that augmentation is better in general.
 
-By the decision rule from Milestone 6 (highest final `val_macro_f1`, ties broken by lower `val_loss`), **Run C** is the best candidate.
+By the decision rule from Milestone 6 (highest final val_macro_f1, ties broken by lower val_loss), **Run C** is the best candidate.
 
 *Engineering checkpoint 6.*
 
@@ -260,3 +260,12 @@ By the decision rule from Milestone 6 (highest final `val_macro_f1`, ties broken
 **Test set only after choosing.** The test set must give an unbiased estimate of how the chosen model behaves on new images. If I compared A, B and C on the test set and kept the best, the test set would become part of model selection, and the reported score would be optimistically biased. So I choose with the validation set only, then evaluate that single model once on the test set in Milestone 8.
 
 ## Milestone 8 - Select and test one model
+
+### Selection
+
+- **Selected Run:** C (augmentation on), Run ID `23e5ed78c9614be5a6c30cc230ac8b18`.
+- **Main metric:** final-epoch val_macro_f1 = **0.6487**, the highest of the three Runs (A: 0.6321, B: 0.6091). No tie, so the val_loss tie-break was not needed.
+- **Other evidence:** C also has the highest validation accuracy (0.6617). Its val_loss (0.8362) is almost the same as A's (0.8326), and its training time is the same (6.2 s). In MLflow, C used the same seed, epochs, batch size, dropout and training_data_identity as A, so the only difference is augmentation.
+- **Trade-off / limitation:** C beats A by only 0.017 macro-F1, about 2 of the 133 validation images, with a single seed. Another seed could reverse the ranking, so this choice is weak evidence that augmentation helps in general. All Runs were also trained for only 4 epochs and their losses were still falling, so none of them is fully trained; C's slightly higher val_loss than A also shows the gain is not clear-cut.
+
+`selection.run_id` in params.yaml is set to `23e5ed78c9614be5a6c30cc230ac8b18`. The other settings are left as they are.
