@@ -1,0 +1,33 @@
+{
+  "configuration": {
+    "augmentation_enabled": false,
+    "batch_size": 32,
+    "dropout": 0.3,
+    "epochs": 4,
+    "horizontal_flip": 0.5,
+    "image_size": 96,
+    "learning_rate": 0.001,
+    "rotation_degrees": 10.0
+  },
+  "data": {
+    "training_data_identity": "8fa943ff6c17a3c874d2b152e9d7980602a5cd50c0d8156625bd00590a3d8c6c"
+  },
+  "environment": {
+    "cuda": null,
+    "dvc": "3.67.1",
+    "mlflow": "3.17.1",
+    "platform": "Linux-6.8.0-149-generic-x86_64-with-glibc2.39",
+    "python": "3.12.16",
+    "torch": "2.11.0+cpu",
+    "torchvision": "0.26.0+cpu"
+  },
+  "execution": {
+    "device": "cpu",
+    "mlflow_run_id": "99bbda976b0c44708038998b08719f38",
+    "random_state": 42
+  },
+  "git": {
+    "commit": "dedf5ab42e5e310c047fbb41f39d40899f1441d7",
+    "dirty": true
+  }
+}

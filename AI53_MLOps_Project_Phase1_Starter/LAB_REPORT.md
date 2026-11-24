@@ -155,6 +155,31 @@ MLflow records the Run itself, its parameters, per-epoch metrics, training time,
 
 ## Milestone 6 - Predict which stages need to run again
 
+### 6.1 Predictions
+
+| Change | VALIDATE | PREPARE | TRAIN | EVALUATE |
+|---|---|---|---|---|
+| Change train.learning_rate | REUSED | REUSED | RERUN | REUSED |
+| Change data.image_size | REUSED | RERUN | RERUN | NEEDS UPDATE |
+| Edit src/validate_data.py; the quality report stays the same | RERUN | REUSED | REUSED | REUSED |
+| Edit only README.md | REUSED | REUSED | REUSED | REUSED |
+
+*Engineering checkpoint 5.*
+
+**Change `train.learning_rate` (setting).** Only TRAIN lists `train.learning_rate` under `params:`, so only TRAIN reruns. VALIDATE and PREPARE do not use it and none of their deps change. EVALUATE does not list it either, and it does not depend on TRAIN's outputs: it loads the model of the fixed `selection.run_id` from MLflow. Its test data, manifests and settings are unchanged, so its saved test results still match.
+
+**Change `data.image_size` (setting).** VALIDATE does not use `data.image_size` and reads only `data/raw`, so it is reused. PREPARE lists `data.image_size`, so it reruns and rewrites the processed images and manifests at the new size. TRAIN reruns because `data.image_size` is in its params and its deps `data/processed/train`, `data/processed/validation` and the train/validation manifests changed. EVALUATE NEEDS UPDATE: `data.image_size`, `data/processed/test` and `data/processed/manifests` all changed, so the saved test results describe the old data. Running it would also fail, because the selected Run was logged with the old `image_size` and a different `training_data_identity`.
+
+**Edit `src/validate_data.py`, report unchanged (file edit).** `src/validate_data.py` is a dep of VALIDATE only, so VALIDATE reruns. It writes the same `reports/data_quality.json`, so the hash DVC stored for that dep of PREPARE is unchanged and PREPARE is reused. TRAIN and EVALUATE depend on PREPARE's outputs, which do not change, so they are reused.
+
+**Edit only `README.md` (file edit).** No stage lists `README.md` in its deps, so every stage is reused.
+
+### 6.3 Decisions before training
+
+- **Main validation metric:** `val_macro_f1` at the final epoch. The three classes are almost balanced, but macro-F1 weights every class equally, so a model that ignores one disease is penalized even when accuracy looks fine.
+- **Tie-break:** if two Runs have the same `val_macro_f1` (to 3 decimals), pick the one with the lower final `val_loss`.
+- **Expected effect of a lower learning rate (0.001 → 0.0003):** smaller weight updates, so with the same 4 epochs the loss should decrease more slowly. I expect higher final `train_loss`/`val_loss` and probably a lower `val_macro_f1` than Run A, but smoother curves.
+
 ## Milestone 7 - Compare three controlled runs
 
 ## Milestone 8 - Select and test one model

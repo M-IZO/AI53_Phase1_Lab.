@@ -17,6 +17,7 @@ def _list_images(directory: Path) -> list[Path]:
     )
 
 
+# Milestone 6 check: this comment changes the code but not the quality report.
 def validate_dataset(raw_root: Path) -> dict:
     """Validate the raw dataset and return a deterministic quality report.
 
