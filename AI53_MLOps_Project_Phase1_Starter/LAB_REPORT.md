@@ -269,3 +269,45 @@ By the decision rule from Milestone 6 (highest final val_macro_f1, ties broken b
 - **Trade-off / limitation:** C beats A by only 0.017 macro-F1, about 2 of the 133 validation images, with a single seed. Another seed could reverse the ranking, so this choice is weak evidence that augmentation helps in general. All Runs were also trained for only 4 epochs and their losses were still falling, so none of them is fully trained; C's slightly higher val_loss than A also shows the gain is not clear-cut.
 
 `selection.run_id` in params.yaml is set to `23e5ed78c9614be5a6c30cc230ac8b18`. The other settings are left as they are.
+
+### Final test results
+
+uv run --locked dvc repro evaluate
+
+```text
+'data/raw.dvc' didn't change, skipping
+Stage 'validate' didn't change, skipping
+Stage 'prepare' didn't change, skipping
+Running stage 'evaluate':
+> uv run --locked python -m src.evaluate
+Loading selected model: runs:/23e5ed78c9614be5a6c30cc230ac8b18/bean-cnn
+```
+
+EVALUATE accepted the Run: it is FINISHED, in the bean-image-classification experiment, with matching image_size (96), class order and training_data_identity (`8fa943ff…`).
+
+reports/test_metrics.json
+
+```json
+{
+  "selected_run_id": "23e5ed78c9614be5a6c30cc230ac8b18",
+  "test_accuracy": 0.640625,
+  "test_macro_f1": 0.6366339869281047,
+  "training_data_identity": "8fa943ff6c17a3c874d2b152e9d7980602a5cd50c0d8156625bd00590a3d8c6c"
+}
+```
+
+| Selected Run | Test accuracy | Test macro-F1 | Val. macro-F1 |
+|---|---|---|---|
+| C `23e5ed78c9614be5a6c30cc230ac8b18` | 0.6406 (82/128) | 0.6366 | 0.6487 |
+
+The test macro-F1 (0.637) is close to the validation macro-F1 (0.649), so the validation score was a fair estimate and the selection did not overfit the validation set much.
+
+reports/test_confusion_matrix.png (rows = true class):
+
+| True \ Predicted | angular_leaf_spot | bean_rust | healthy | Recall |
+|---|---|---|---|---|
+| angular_leaf_spot | 23 | 11 | 9 | 0.53 |
+| bean_rust | 7 | 25 | 11 | 0.58 |
+| healthy | 2 | 6 | 34 | 0.81 |
+
+The model recognizes healthy leaves well (recall 0.81) but confuses the two diseases with each other and with healthy leaves. The most serious error for a farmer is that 20 of the 86 diseased leaves (9 + 11) are predicted healthy, so the disease would be missed. With 4 epochs this model is a working pipeline baseline, not a model ready for use.
