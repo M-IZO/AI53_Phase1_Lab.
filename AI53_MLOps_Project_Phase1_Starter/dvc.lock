@@ -147,7 +147,7 @@ stages:
       size: 98673
     - path: reports/run_manifest.json
       hash: md5
-      md5: f5318a4be1843c05aeeba0b4696833d2
+      md5: f586fa8a8ea7ab9f62625e681de53690
       size: 793
     - path: reports/train_summary.json
       hash: md5
