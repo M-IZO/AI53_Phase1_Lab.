@@ -143,6 +143,16 @@ EVALUATE does not depend on TRAIN: it depends on the prepared test data and mani
 
 ## Milestone 5 - Record what each MLflow Run used
 
+uv run --locked pytest -q
+
+```bash
+19 passed in 4.62s
+```
+
+Git records the exact code and configuration through the commit SHA stored in the Run manifest, together with whether the working tree was dirty.
+DVC records which data and outputs the Run used and produced, through the hashes in `dvc.lock` of the raw images, the processed images and manifests.
+MLflow records the Run itself, its parameters, per-epoch metrics, training time, the training Dataset input, the report artifacts  and the logged bean-cnn model with its signature, input example and metadata.
+
 ## Milestone 6 - Predict which stages need to run again
 
 ## Milestone 7 - Compare three controlled runs
