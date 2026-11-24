@@ -231,4 +231,32 @@ The lower learning rate behaved as expected: after 4 epochs Run B has a higher v
 
 ## Milestone 7 - Compare three controlled runs
 
+### 7.1 Run C setup and prediction
+
+Run C starts from Run A's settings (`train.learning_rate` back to 0.001) and changes exactly one setting: `augmentation.enabled: true` (random horizontal flip with p=0.5 and random rotation of ±10°, applied to training images only).
+
+**Prediction:** augmentation shows the network a slightly different version of each image every epoch, so the training task is harder. With only 4 epochs and the same seed, I expect a higher `train_loss` than Run A and a validation score close to Run A, possibly slightly lower, because the model does not have enough epochs to benefit from the extra variety. The benefit of augmentation (less overfitting) should mainly appear with longer training. Training time should be about the same, since the flip and rotation are cheap compared with the CNN.
+
+### 7.2 Validation comparison (final epoch = logged model)
+
+All three Runs were checked in MLflow: same seed (42), 4 epochs, batch size 32, dropout 0.3 and the same `training_data_identity` (`8fa943ff…`). Only the controlled setting differs.
+
+| Run | Controlled change | Val. Accuracy | Val. Macro-F1 | Training time | MLflow Run ID |
+|---|---|---|---|---|---|
+| A | Baseline (lr 0.001, no augmentation) | 0.6466 | 0.6321 | 6.3 s | `99bbda976b0c44708038998b08719f38` |
+| B | `train.learning_rate` 0.001 → 0.0003 | 0.6165 | 0.6091 | 6.1 s | `9bf7b6dba4f74ddcab6100fe0cb282e5` |
+| C | `augmentation.enabled` false → true | 0.6617 | 0.6487 | 6.2 s | `23e5ed78c9614be5a6c30cc230ac8b18` |
+
+**B vs A.** The prediction is supported: with the smaller learning rate, B learns more slowly. After 4 epochs it has a higher `val_loss` (0.8927 vs 0.8326), a higher `train_loss` (0.9198 vs 0.8670) and a lower macro-F1 (−0.023). Its loss curves were still falling at epoch 4, so B is under-trained rather than worse in general: with more epochs it could catch up.
+
+**C vs A.** The prediction is partly supported. As expected, `train_loss` is higher (0.8770 vs 0.8670) and the training time is unchanged. But the validation scores did not drop: C is slightly better (macro-F1 +0.017, accuracy +0.015) with almost the same `val_loss` (0.8362 vs 0.8326). The accuracy gap is only 2 of the 133 validation images, so with one seed and a small validation set this difference is too small to say that augmentation is better in general.
+
+By the decision rule from Milestone 6 (highest final `val_macro_f1`, ties broken by lower `val_loss`), **Run C** is the best candidate.
+
+*Engineering checkpoint 6.*
+
+**Primary metric.** I use macro-F1 because it computes the F1 score for each of the three classes and averages them with equal weight. Accuracy only counts correct images overall, so two models with similar accuracy can make their errors on different classes, and a model that is weak on one disease can still look good. In plant disease detection, missing one disease completely is a real failure, and macro-F1 exposes it.
+
+**Test set only after choosing.** The test set must give an unbiased estimate of how the chosen model behaves on new images. If I compared A, B and C on the test set and kept the best, the test set would become part of model selection, and the reported score would be optimistically biased. So I choose with the validation set only, then evaluate that single model once on the test set in Milestone 8.
+
 ## Milestone 8 - Select and test one model
