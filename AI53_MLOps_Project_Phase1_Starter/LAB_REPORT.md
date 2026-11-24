@@ -180,6 +180,64 @@ MLflow records the Run itself, its parameters, per-epoch metrics, training time,
 - **Tie-break:** if two Runs have the same `val_macro_f1` (to 3 decimals), pick the one with the lower final `val_loss`.
 - **Expected effect of a lower learning rate (0.001 → 0.0003):** smaller weight updates, so with the same 4 epochs the loss should decrease more slowly. I expect higher final `train_loss`/`val_loss` and probably a lower `val_macro_f1` than Run A, but smoother curves.
 
+### 6.3 / 6.4 Observed results
+
+- **Run A** (baseline, `learning_rate=0.001`): `99bbda976b0c44708038998b08719f38`. Final `val_macro_f1=0.6321`, `val_loss=0.8326`.
+- **Run B** (`learning_rate=0.0003`): `9bf7b6dba4f74ddcab6100fe0cb282e5`. Final `val_macro_f1=0.6091`, `val_loss=0.8927`.
+
+| Check | VALIDATE | PREPARE | TRAIN | EVALUATE |
+|---|---|---|---|---|
+| Baseline `dvc repro train` (Run A) | RERUN | RERUN | RERUN | NOT RUN |
+| 1. Run again, nothing changed | REUSED | REUSED | REUSED | NOT RUN |
+| 2. Comment added to `src/validate_data.py` | RERUN | REUSED | REUSED | NOT RUN |
+| `train.learning_rate` = 0.0003 (Run B) | REUSED | REUSED | RERUN | NOT RUN |
+
+Baseline:
+```text
+'data/raw.dvc' didn't change, skipping
+Running stage 'validate':
+> uv run --locked python -m src.validate_data
+Generating lock file 'dvc.lock'
+Running stage 'prepare':
+> uv run --locked python -m src.prepare
+Running stage 'train':
+> uv run --locked python -m src.train
+Training complete. MLflow Run ID: 99bbda976b0c44708038998b08719f38
+```
+
+Check 1:
+```text
+'data/raw.dvc' didn't change, skipping
+Stage 'validate' didn't change, skipping
+Stage 'prepare' didn't change, skipping
+Stage 'train' didn't change, skipping
+Data and pipelines are up to date.
+```
+
+Check 2 (`reports/data_quality.json` md5 `96529065e4f57b8ad701e3a2fe49c061` before and after):
+```text
+'data/raw.dvc' didn't change, skipping
+Running stage 'validate':
+> uv run --locked python -m src.validate_data
+Updating lock file 'dvc.lock'
+Stage 'prepare' didn't change, skipping
+Stage 'train' didn't change, skipping
+```
+
+Learning-rate change:
+```text
+'data/raw.dvc' didn't change, skipping
+Stage 'validate' didn't change, skipping
+Stage 'prepare' didn't change, skipping
+Running stage 'train':
+> uv run --locked python -m src.train
+Training complete. MLflow Run ID: 9bf7b6dba4f74ddcab6100fe0cb282e5
+```
+
+**Comparison with the predictions.** The two rows I could test match the predictions. With the comment in `src/validate_data.py`, VALIDATE reran because one of its deps changed, but it rewrote an identical `reports/data_quality.json`, so PREPARE saw the same hash for that dep and was skipped, and TRAIN with it. Changing `train.learning_rate` reran only TRAIN, the only stage that lists this param. The only extra reruns are in the baseline row: there was no `dvc.lock` yet, so DVC had no stored hashes and had to run VALIDATE, PREPARE and TRAIN once. EVALUATE is NOT RUN in every row because `dvc repro train` only runs TRAIN and its upstream stages, and EVALUATE is on a separate branch.
+
+The lower learning rate behaved as expected: after 4 epochs Run B has a higher `val_loss` (0.8927 vs 0.8326) and a lower `val_macro_f1` (0.6091 vs 0.6321), and its losses were still falling steadily at the last epoch.
+
 ## Milestone 7 - Compare three controlled runs
 
 ## Milestone 8 - Select and test one model
